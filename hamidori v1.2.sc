@@ -44,9 +44,9 @@
 	}
 };
 ~voicek={ |amp=1.3|
-    var env = EnvGen.kr(Env.perc(0.0063, 0.03), doneAction:2);
+    var env = EnvGen.kr(Env.perc(0.0053, 0.03), doneAction:2);
 	var noise = WhiteNoise.ar*env;
-    var burst = BPF.ar(noise, 3000, 0.3);
+    var burst = BPF.ar(noise, 2550, 0.3);
     burst * amp ! 2;
 };
 ~voices={ |amp=0.3, dur=0.04|
@@ -56,34 +56,34 @@
     );
 	var noise = WhiteNoise.ar * env;
     var hiss = BPF.ar(noise,346, 0.25)
-             + BPF.ar(noise, 2200, 0.2) * 0.6;
+             + BPF.ar(noise, 2800, 0.2) * 0.6;
 	hiss = HPF.ar(hiss,1100);
 	amp=amp;
 	(hiss * amp) ! 2;
 };
 ~voicen={
-   var  nose=PinkNoise.ar*0.4;
+   var  nose=PinkNoise.ar*0.7;
     var n1=BPF.ar(nose, 750, 0.3);   //鼻腔共鳴
-    var n2=LPF.ar(nose, 2100);
-    nose=(n1+n2)*(1-Line.kr(0, 1, 0.12));
+    var n2=LPF.ar(nose, 3100);
+	nose=(n1+n2)*(1-Line.kr(0, 1, 0.12));
 	nose;
 };
 )
 {~voicen.()}.play
 ~test.();
-{~midori.(392,"","a")}.play
-{~midori.(392,"","i")}.play
-{~midori.(392,"","u")}.play
-{~midori.(392,"","e")}.play
-{~midori.(392,"","o")}.play
+{~midori.(300,"","a")}.play
+{~midori.(300,"","i")}.play
+{~midori.(300,"","u")}.play
+{~midori.(300,"","e")}.play
+{~midori.(300,"","o")}.play
 (
 ~midorivow={ |freq=316,vowel="a",mix=0,muff=false|
 	switch(vowel,
-		"a", {~voice.(f0: freq,mix:mix,muff:muff,f01:820,f02:1320,f03:2800)},
-		"i", { ~voice.(f0: freq, f01:305, f02:2695, f03:3250,mix:mix,muff:muff) },
-		"u", { ~voice.(f0: freq, f01:355, f02:1635, f03:2600,mix:mix,muff:muff) },
+		"a", {~voice.(f0: freq,mix:mix,muff:muff,f01:1020,f02:1920,f03:2800)},
+		"i", { ~voice.(f0: freq, f01:505, f02:3095, f03:3250,mix:mix,muff:muff) },
+		"u", { ~voice.(f0: freq, f01:555, f02:1935, f03:2600,mix:mix,muff:muff) },
 		"e", { ~voice.(f0:freq,mix:mix,muff:muff,
-			f01:460,f02:2297,f03:2800)},
+			f01:799,f02:2297,f03:2800)},
 		"o",{~voice.(f0:freq,f01:790,f02:980,f03:1770,mix:mix,muff:muff)}
 	)
 };
@@ -108,10 +108,10 @@
 	},
 	"s", {
 			syn=Routine({
-				{~voices.()}.play;
-				0.04.wait;
+				{~voices.(0.24,0.02)}.play;
+				0.05.wait;
 				innersyn={~midorivow.(freq, vow)}.play;
-				(duration-0.04).wait;
+				(duration-0.05).wait;
 				innersyn.free;
 			}).play;
 			(duration).wait;
@@ -120,9 +120,9 @@
 	"n", {
 		syn=Routine({
 				{~voicen.()}.play;
-				0.02.wait;
+				0.05.wait;
 				innersyn={~midorivow.(freq, vow)}.play;
-				(duration-0.02).wait;
+				(duration-0.05).wait;
 				innersyn.free;
 			}).play;
 			(duration).wait;
@@ -135,8 +135,8 @@
 //a,i,u,e,o
 (
 ~test={
-var shuha=366;//316;
-	var con="n";
+var shuha=306;//316;
+	var con="";
 Routine({
 	~midori.(shuha,con,"a");
 	~midori.(shuha,con,"i");
@@ -147,8 +147,35 @@ Routine({
 };
 ~test.();
 )
-{~test.()}.play;
-{SinOsc.ar(316)}.play
+~test.()
+(
+~anau={
+var amp=1;
+Routine({
+		~midori.(amp*240,"","a",0.1);
+	~midori.(amp*303,"n","a",0.5);
+		wait(0.1);
+		~midori.(amp*300,"","u",0.2);
+}).play;
+};
+~anau.();
+)
+
+(
+~rec={
+Routine({
+		s.record;
+		wait(1);
+		~midori.(300,"","o",1);
+		wait(1);
+		s.stopRecording;
+}).play;
+};
+~rec.();
+)
+s.stopRecording;
+{
+	SinOsc.ar(316)}.play
 //高木・ランズバーグ
 (
 {
